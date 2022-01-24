@@ -57,6 +57,7 @@ impl Round {
 	}
 
 	pub fn solve(&self) -> Solution {
+		let mut best_solution = Solution { method: vec![], solved: false };
 		// Loop through all combinations of numbers from the selection
 		for (i, num_1) in self.selection.iter().enumerate() {
 	        for (j, num_2) in self.selection[i + 1..].iter().enumerate() {
@@ -84,15 +85,15 @@ impl Round {
 
 	            				let sol = new_round.solve();
 
-	            				// If we new have a solution, add this step to the start of the list, and carry
-	            				// on returning.
-	            				if sol.solved {
+	            				// If we now have a solution and it's the best so far, add this step to the start of the list, and
+	            				// store it off.
+	            				if sol.solved && (!best_solution.solved || sol.method.len() < best_solution.method.len()) {
 	            					let mut new_method = Vec::new();
 
 		            				new_method.push(step);
 		            				new_method.append(&mut sol.method.clone());
 
-	            					return Solution { method: new_method, solved: sol.solved };
+	            					best_solution = Solution { method: new_method, solved: sol.solved };
 		            			}
 	            			}
 	            		}
@@ -100,7 +101,7 @@ impl Round {
 	            }
 	        }
 	    }
-	    Solution { method: vec![], solved: false }
+	    best_solution
 	}
 }
 

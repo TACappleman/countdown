@@ -105,3 +105,14 @@ fn generate_0l_round() {
 fn generate_5l_round() {
     countdown::Round::new(5);
 }
+
+#[test]
+fn check_shortest_method() {
+    let round = countdown::Round::new_spec(vec![100, 75, 50, 25, 2, 2], 200);
+    let soln = round.solve();
+    assert_eq!(soln.solved, true);
+    assert_eq!(soln.method.len(), 1);
+    assert!(soln.method[0].num_1 == 100);
+    assert!(soln.method[0].num_2 == 2);
+    assert!(matches!(soln.method[0].op, countdown::Operation::Times));
+}
