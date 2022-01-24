@@ -1,5 +1,5 @@
 use std::io::{stdout, stdin, Write};
-use std::thread;
+use std::thread::{self, JoinHandle};
 use std::time::Duration;
 use std::sync::mpsc::{self, TryRecvError};
 
@@ -14,7 +14,16 @@ fn main() {
     let round = countdown::Round::new(larges);
     println!("Your round is: {}", round);
 
-    let (tx, rx) = mpsc::channel();
+    let handle = setup_threads();
+
+    let solution = round.solve();
+
+    handle.join().unwrap();
+    println!("\nSolution is:\n{}", solution);
+}
+
+fn setup_threads() -> JoinHandle<()> {
+	let (tx, rx) = mpsc::channel();
 
     thread::spawn(move || {
     	println!("Press enter to end round early");
@@ -23,7 +32,7 @@ fn main() {
     	let _ = tx.send(());
     });
 
-    let handle = thread::spawn(move || {
+    thread::spawn(move || {
         for i in 0..30001 {
         	if i % 1000 == 0 {
 	            print!("\r{} ", 30-i/1000);
@@ -38,10 +47,5 @@ fn main() {
 	            Err(TryRecvError::Empty) => {}
 	        }
         }
-    });
-
-    let solution = round.solve();
-
-    handle.join().unwrap();
-    println!("\nSolution is:\n{}", solution);
+    })
 }
