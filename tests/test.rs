@@ -5,7 +5,7 @@ fn easy_solve() {
     assert_eq!(soln.solved, true);
     assert!(soln.method[0].num_1 == 100);
     assert!(soln.method[0].num_2 == 50);
-    assert!(matches!(soln.method[0].op, countdown::Operation::Plus));
+    assert!(matches!(soln.method[0].op_enum, countdown::Operation::Plus));
 }
 
 #[test]
@@ -114,5 +114,5 @@ fn check_shortest_method() {
     assert_eq!(soln.method.len(), 1);
     assert!(soln.method[0].num_1 == 100);
     assert!(soln.method[0].num_2 == 2);
-    assert!(matches!(soln.method[0].op, countdown::Operation::Times));
+    assert!(matches!(soln.method[0].op_enum, countdown::Operation::Times));
 }

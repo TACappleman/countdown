@@ -19,7 +19,8 @@ pub enum Operation {
 pub struct Step {
 	pub num_1: u32,
 	pub num_2: u32,
-	pub op: Operation
+	pub op: fn(u32, u32) -> Result<u32, &'static str>,
+	pub op_enum: Operation
 }
 
 pub struct Solution {
@@ -63,7 +64,7 @@ impl Round {
 	        for (j, num_2) in self.selection[i + 1..].iter().enumerate() {
 	            for op in [Operation::Plus, Operation::Minus, Operation::Times, Operation::Divide] {
 	            	// Put the largest number first in the step, so that subtraction and division (may) work
-	            	let step = Step {num_1: cmp::max(*num_1, *num_2), num_2: cmp::min(*num_1, *num_2), op: op};
+	            	let step = Step::new(cmp::max(*num_1, *num_2), cmp::min(*num_1, *num_2), op);
 	            	match step.output() {
 	            		// If this step is invalid, move on
 	            		Err(_) =>  { continue; }
@@ -106,13 +107,18 @@ impl Round {
 }
 
 impl Step {
+	fn new(num_1: u32, num_2: u32, op_enum: Operation) -> Step {
+		let op: fn(u32, u32) -> Result<u32, &'static str> = match op_enum {
+			Operation::Plus => |x, y| Ok(x + y),
+			Operation::Minus => |x, y| if x >= y { Ok(x - y) } else { Err("Cannot subtract") },
+			Operation::Times => |x, y| Ok(x * y),
+			Operation::Divide => |x, y| if y != 0 && x % y == 0 {Ok(x / y)} else {Err("Cannot divide")},
+		};
+		Step { num_1, num_2, op, op_enum }
+	}
+
 	fn output(&self) -> Result<u32, &'static str> {
-		match self.op {
-			Operation::Plus => Ok(self.num_1 + self.num_2),
-			Operation::Minus => if self.num_1 > self.num_2 { Ok(self.num_1 - self.num_2) } else { Err("Cannot subtract") },
-			Operation::Times => Ok(self.num_1 * self.num_2),
-			Operation::Divide => if self.num_1 % self.num_2 == 0 { Ok(self.num_1 / self.num_2) } else { Err("Cannot divide") }
-		}
+		(self.op)(self.num_1, self.num_2)
 	}
 
 	fn output_string(&self) -> String {
@@ -147,7 +153,7 @@ impl fmt::Display for Operation {
 
 impl fmt::Display for Step {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "{}{}{}={}", self.num_1, self.op, self.num_2, self.output_string())
+		write!(f, "{}{}{}={}", self.num_1, self.op_enum, self.num_2, self.output_string())
 	}
 }
 
