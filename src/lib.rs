@@ -107,9 +107,7 @@ impl Round {
                                     && (!best_solution.solved
                                         || sol.method.len() < best_solution.method.len())
                                 {
-                                    let mut new_method = Vec::new();
-
-                                    new_method.push(step);
+                                    let mut new_method = vec![step];
                                     new_method.append(&mut sol.method.clone());
 
                                     best_solution = Solution {
@@ -206,7 +204,7 @@ impl fmt::Display for Solution {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.solved {
             for step in &self.method {
-                write!(f, "{}\n", step)?
+                writeln!(f, "{}", step)?
             }
         } else {
             write!(f, "impossible")?
