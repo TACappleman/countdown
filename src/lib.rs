@@ -1,3 +1,6 @@
+//Copyright (c) Microsoft Corporation. All rights reserved.
+//Highly Confidential Material
+
 use rand::Rng;
 use std::cmp;
 use std::fmt;
@@ -36,7 +39,7 @@ impl Round {
 
         let mut selection = Vec::new();
 
-        let mut large_pot = vec![30, 60, 90, 120];
+        let mut large_pot = vec![25, 50, 75, 100];
         let mut small_pot = vec![1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10];
 
         for _ in 0..num_larges {
@@ -129,13 +132,7 @@ impl Step {
     fn new(num_1: u32, num_2: u32, op_enum: Operation) -> Step {
         let op: fn(u32, u32) -> Result<u32, &'static str> = match op_enum {
             Operation::Plus => |x, y| Ok(x + y),
-            Operation::Minus => |x, y| {
-                if x >= y {
-                    Ok(x - y)
-                } else {
-                    Err("Cannot subtract")
-                }
-            },
+            Operation::Minus => |x, y| Ok(x - y),
             Operation::Times => |x, y| Ok(x * y),
             Operation::Divide => |x, y| {
                 if y != 0 && x % y == 0 {
@@ -158,10 +155,8 @@ impl Step {
     }
 
     fn output_string(&self) -> String {
-        match self.output() {
-            Ok(number) => number.to_string(),
-            Err(e) => String::from(e),
-        }
+        let number = self.output().unwrap();
+        number.to_string()
     }
 }
 
@@ -217,7 +212,7 @@ impl fmt::Display for Solution {
 fn easy_solve() {
     let round = Round::new_spec(vec![100, 50], 150);
     let soln = round.solve();
-    assert_eq!(soln.solved, true);
+    assert!(soln.solved);
     assert!(soln.method[0].num_1 == 100);
     assert!(soln.method[0].num_2 == 50);
     assert!(matches!(soln.method[0].op_enum, Operation::Plus));
@@ -227,7 +222,7 @@ fn easy_solve() {
 fn no_solve() {
     let round = Round::new_spec(vec![1, 1, 2, 2, 3, 3], 100);
     let soln = round.solve();
-    assert_eq!(soln.solved, false);
+    assert!(!soln.solved);
     assert_eq!(soln.method.len(), 0);
 }
 
@@ -235,7 +230,7 @@ fn no_solve() {
 fn no_selection() {
     let round = Round::new_spec(vec![], 100);
     let soln = round.solve();
-    assert_eq!(soln.solved, false);
+    assert!(!soln.solved);
     assert_eq!(soln.method.len(), 0);
 }
 
@@ -243,7 +238,7 @@ fn no_selection() {
 fn one_num_selection() {
     let round = Round::new_spec(vec![1], 100);
     let soln = round.solve();
-    assert_eq!(soln.solved, false);
+    assert!(!soln.solved);
     assert_eq!(soln.method.len(), 0);
 }
 
@@ -251,8 +246,9 @@ fn one_num_selection() {
 fn multi_step_solve() {
     let round = Round::new_spec(vec![1, 1, 2, 2, 3, 3], 81);
     let soln = round.solve();
-    assert_eq!(soln.solved, true);
+    assert!(soln.solved);
     assert_eq!(soln.method.len(), 5);
+    println!("{}", soln);
 }
 
 #[test]
@@ -325,9 +321,27 @@ fn generate_5l_round() {
 fn check_shortest_method() {
     let round = Round::new_spec(vec![100, 75, 50, 25, 2, 2], 200);
     let soln = round.solve();
-    assert_eq!(soln.solved, true);
+    assert!(soln.solved);
     assert_eq!(soln.method.len(), 1);
     assert!(soln.method[0].num_1 == 100);
     assert!(soln.method[0].num_2 == 2);
     assert!(matches!(soln.method[0].op_enum, Operation::Times));
+    println!("{}", round);
+}
+
+#[test]
+fn invalid_divide_coverage() {
+    let round = Round::new_spec(vec![100, 75], 200);
+    let soln = round.solve();
+    assert!(!soln.solved);
+    assert_eq!(soln.method.len(), 0);
+    println!("{}", soln);
+}
+
+#[test]
+fn minus_divide_coverage() {
+    let round = Round::new_spec(vec![100, 25, 3], 1);
+    let soln = round.solve();
+    assert_eq!(soln.method.len(), 2);
+    println!("{}", soln);
 }
